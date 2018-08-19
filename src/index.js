@@ -25,6 +25,8 @@ class Main extends Component {
 
         const videoStyle = state.isFullscreen ? fullscreen : normalSize;
 
+        const videoPlayerFit = { objectFit: state.streamVideo ? "cover" : "contain" };
+
         return (
             <div>
                 <div>
@@ -33,7 +35,7 @@ class Main extends Component {
                 </div>
                 <video
                     ref={x => this.myVideo = x}
-                    style={{ ...videoStyle, objectFit: "cover" }}
+                    style={{ ...videoStyle, ...videoPlayerFit }}
                     poster="http://icons.iconarchive.com/icons/paomedia/small-n-flat/128/profile-icon.png"></video>
             </div>
         );
@@ -61,23 +63,22 @@ class Main extends Component {
         const newState = !state.streamVideo;
 
         if (newState) {
-            this.steamMyVideo();
+            this.steamMyVideo().then(() => this.setState({ streamVideo: newState }));
         } else {
+            this.myVideo.pause();
             this.myVideo.srcObject = null;
-        }
 
-        this.setState({ streamVideo: newState });
+            this.setState({ streamVideo: newState });
+        }
     }
 
     steamMyVideo() {
-        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
         const myVideo = this.myVideo;
 
-        navigator.getUserMedia({ video: true, audio: true }, stream => {
+        return navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
             myVideo.srcObject = stream;
             myVideo.play();
-        }, () => console.error("My media failed"));
+        }).catch(e => console.error(e));
     }
 }
 
