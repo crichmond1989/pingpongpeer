@@ -1,26 +1,22 @@
-import Peer from "peerjs";
 import React, { Component } from "react";
 import { render } from "react-dom";
 
 class Main extends Component {
-    constructor(props) {
-        super(props);
+    componentDidMount() {
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
-        const peer = new Peer();
+        const myVideo = this.myVideo;
 
-        peer.on("open", id => {
-            console.log(`Peer opened. ID: ${id}`);
-
-            this.setState({ peerId: id });
-        });
+        navigator.getUserMedia({ video: true, audio: true }, stream => {
+            myVideo.srcObject = stream;
+            myVideo.play();
+        }, () => console.error("My media failed"));
     }
 
     render() {
-        const state = this.state || {};
-
         return (
             <div>
-                <p>Peer ID: {state.peerId || "Unknown"}</p>
+                <video ref={x => this.myVideo = x}></video>
             </div>
         );
     }
